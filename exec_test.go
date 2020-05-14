@@ -291,7 +291,8 @@ var execTests = []execTest{
 	// Fields on maps.
 	{"map .one", "{{.MSI.one}}", "1", tVal, true},
 	{"map .two", "{{.MSI.two}}", "2", tVal, true},
-	{"map .NO", "{{.MSI.NO}}", "<no value>", tVal, true},
+	// PJS {"map .NO", "{{.MSI.NO}}", "<no value>", tVal, true},
+	{"map .NO", "{{.MSI.NO}}", "", tVal, true},
 	{"map .one interface", "{{.MXI.one}}", "1", tVal, true},
 	{"map .WRONG args", "{{.MSI.one 1}}", "", tVal, false},
 	{"map .WRONG type", "{{.MII.one}}", "", tVal, false},
@@ -341,7 +342,8 @@ var execTests = []execTest{
 	{"NIL", "{{.NIL}}", "<nil>", tVal, true},
 
 	// Empty interfaces holding values.
-	{"empty nil", "{{.Empty0}}", "<no value>", tVal, true},
+	// PJS {"empty nil", "{{.Empty0}}", "<no value>", tVal, true},
+	{"empty nil", "{{.Empty0}}", "", tVal, true},
 	{"empty with int", "{{.Empty1}}", "3", tVal, true},
 	{"empty with string", "{{.Empty2}}", "empty2", tVal, true},
 	{"empty with slice", "{{.Empty3}}", "[7 8]", tVal, true},
@@ -349,8 +351,10 @@ var execTests = []execTest{
 	{"empty with struct, field", "{{.Empty4.V}}", "UinEmpty", tVal, true},
 
 	// Edge cases with <no value> with an interface value
-	{"field on interface", "{{.foo}}", "<no value>", nil, true},
-	{"field on parenthesized interface", "{{(.).foo}}", "<no value>", nil, true},
+	// PJS {"field on interface", "{{.foo}}", "<no value>", nil, true},
+	{"field on interface", "{{.foo}}", "", nil, true},
+	// PJS {"field on parenthesized interface", "{{(.).foo}}", "<no value>", nil, true},
+	{"field on parenthesized interface", "{{(.).foo}}", "", nil, true},
 
 	// Issue 31810: Parenthesized first element of pipeline with arguments.
 	// See also TestIssue31810.
@@ -468,7 +472,8 @@ var execTests = []execTest{
 		"&lt;script&gt;alert(&#34;XSS&#34;);&lt;/script&gt;", nil, true},
 	{"html", `{{html .PS}}`, "a string", tVal, true},
 	{"html typed nil", `{{html .NIL}}`, "&lt;nil&gt;", tVal, true},
-	{"html untyped nil", `{{html .Empty0}}`, "&lt;no value&gt;", tVal, true},
+	// {"html untyped nil", `{{html .Empty0}}`, "&lt;no value&gt;", tVal, true},
+	{"html untyped nil", `{{html .Empty0}}`, "", tVal, true},
 
 	// JavaScript.
 	{"js", `{{js .}}`, `It\'d be nice.`, `It'd be nice.`, true},
@@ -1244,7 +1249,8 @@ func TestMissingMapKey(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	want := "99 <no value>"
+	// PJS want := "99 <no value>"
+	want := "99 "
 	got := b.String()
 	if got != want {
 		t.Errorf("got %q; expected %q", got, want)
@@ -1256,7 +1262,8 @@ func TestMissingMapKey(t *testing.T) {
 	if err != nil {
 		t.Fatal("default:", err)
 	}
-	want = "99 <no value>"
+	// PJS want = "99 <no value>"
+	want = "99 "
 	got = b.String()
 	if got != want {
 		t.Errorf("got %q; expected %q", got, want)

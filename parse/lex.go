@@ -44,20 +44,21 @@ const (
 	itemComplex                      // complex constant (1+2i); imaginary is just a number
 	itemAssign                       // equals ('=') introducing an assignment
 	itemDeclare                      // colon-equals (':=') introducing a declaration
-	itemEOF
-	itemField      // alphanumeric identifier starting with '.'
-	itemIdentifier // alphanumeric identifier not starting with '.'
-	itemLeftDelim  // left action delimiter
-	itemLeftParen  // '(' inside action
-	itemNumber     // simple number, including imaginary
-	itemPipe       // pipe symbol
-	itemRawString  // raw quoted string (includes quotes)
-	itemRightDelim // right action delimiter
-	itemRightParen // ')' inside action
-	itemSpace      // run of spaces separating arguments
-	itemString     // quoted string (includes quotes)
-	itemText       // plain text
-	itemVariable   // variable starting with '$', such as '$' or  '$1' or '$hello'
+	itemEOF                          //
+	itemField                        // alphanumeric identifier starting with '.'
+	itemIdentifier                   // alphanumeric identifier not starting with '.'
+	itemLeftDelim                    // left action delimiter
+	itemLeftParen                    // '(' inside action
+	itemNumber                       // simple number, including imaginary
+	itemPipe                         // pipe symbol
+	itemRawString                    // raw quoted string (includes quotes)
+	itemRightDelim                   // right action delimiter
+	itemRightParen                   // ')' inside action
+	itemSpace                        // run of spaces separating arguments
+	itemString                       // quoted string (includes quotes)
+	itemText                         // plain text
+	itemVariable                     // variable starting with '$', such as '$' or  '$1' or '$hello'
+
 	// Keywords appear after all the rest.
 	itemKeyword  // used only to delimit the keywords
 	itemBlock    // block keyword
@@ -70,6 +71,10 @@ const (
 	itemRange    // range keyword
 	itemTemplate // template keyword
 	itemWith     // with keyword
+
+	// PJS : itemExtend     // extend keyword
+	// PJS : itemImport     // import keyword
+	// PJS : itemPath       // path keyword
 )
 
 var key = map[string]itemType{
@@ -83,6 +88,13 @@ var key = map[string]itemType{
 	"nil":      itemNil,
 	"template": itemTemplate,
 	"with":     itemWith,
+	// PJS : "extend": itemExtend,
+	// PJS : "import": itemImport,
+	// PJS : "path": itemPath,
+	// PJS : "isdef": itemIsDef,
+	// PJS : "undef": itemUnDef,
+	// PJS : "popdef": itemPopDef,
+	// PJS : "pushdef": itemPushDef,
 }
 
 const eof = -1

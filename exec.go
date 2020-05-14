@@ -11,6 +11,7 @@ import (
 	"runtime"
 	"strings"
 
+	"github.com/pschlump/extend/fmtsort"
 	"github.com/pschlump/extend/parse"
 )
 
@@ -361,17 +362,16 @@ func (s *state) walkRange(dot reflect.Value, r *parse.RangeNode) {
 			oneIteration(reflect.ValueOf(i), val.Index(i))
 		}
 		return
-		/* PJS
-		case reflect.Map:
-			if val.Len() == 0 {
-				break
-			}
-			om := fmtsort.Sort(val)
-			for i, key := range om.Key {
-				oneIteration(key, om.Value[i])
-			}
-			return
-		*/
+	case reflect.Map:
+		if val.Len() == 0 {
+			break
+		}
+		// PJS - pulled from 'intnternal' package :: om := fmtsort.Sort(val)
+		om := fmtsort.Sort(val)
+		for i, key := range om.Key {
+			oneIteration(key, om.Value[i])
+		}
+		return
 	case reflect.Chan:
 		if val.IsNil() {
 			break
@@ -974,7 +974,8 @@ func printableValue(v reflect.Value) (interface{}, bool) {
 		v, _ = indirect(v) // fmt.Fprint handles nil.
 	}
 	if !v.IsValid() {
-		return "<no value>", true
+		// PJS - return "<no value>", true
+		return "", true
 	}
 
 	if !v.Type().Implements(errorType) && !v.Type().Implements(fmtStringerType) {
