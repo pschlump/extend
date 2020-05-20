@@ -745,6 +745,7 @@ func evalArgs(args []interface{}) string {
 	}
 	if !ok {
 		for i, arg := range args {
+			// PJS - need state for a printableValue
 			a, ok := printableValue(reflect.ValueOf(arg))
 			if ok {
 				args[i] = a

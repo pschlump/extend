@@ -18,7 +18,7 @@ import (
 	"github.com/pschlump/extend/parse"
 )
 
-// PJS "internal/fmtsort"
+// PJS "internal/fmtsort" -- replace with local copy
 
 // maxExecDepth specifies the maximum stack depth of templates within
 // templates. This limit is only practically reached by accidentally
