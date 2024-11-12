@@ -2,12 +2,6 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// Copyright 2020 Philip Schlump. All rights reserved.
-// Same license as the Go Authors in the LICENSE file.
-// Copyright 2020 Philip Schlump. All rights reserved.
-// Same license as the Go Authors in the LICENSE file.
-
-
 package template_test
 
 import (
@@ -15,7 +9,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/pschlump/extend"
+	template "github.com/pschlump/extend"
 )
 
 func ExampleTemplate() {

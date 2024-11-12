@@ -2,9 +2,6 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// Copyright 2020 Philip Schlump. All rights reserved.
-// Same license as the Go Authors in the LICENSE file.
-
 package template
 
 import (
@@ -17,6 +14,7 @@ import (
 // common holds the information shared by related templates.
 type common struct {
 	tmpl   map[string]*Template // Map from name to defined templates.
+	muTmpl sync.RWMutex         // protects tmpl
 	option option
 	// We use two maps, one for parsing and one for execution.
 	// This separation makes the API cleaner since it doesn't
@@ -27,7 +25,7 @@ type common struct {
 }
 
 // Template is the representation of a parsed template. The *parse.Tree
-// field is exported only for use by html/template and should be treated
+// field is exported only for use by [html/template] and should be treated
 // as unexported by all other clients.
 type Template struct {
 	name string
@@ -82,7 +80,7 @@ func (t *Template) init() {
 
 // Clone returns a duplicate of the template, including all associated
 // templates. The actual representation is not copied, but the name space of
-// associated templates is, so further calls to Parse in the copy will add
+// associated templates is, so further calls to [Template.Parse] in the copy will add
 // templates to the copy but not to the original. Clone can be used to prepare
 // common templates and use them with variant definitions for other templates
 // by adding the variants after the clone is made.
@@ -92,6 +90,8 @@ func (t *Template) Clone() (*Template, error) {
 	if t.common == nil {
 		return nt, nil
 	}
+	t.muTmpl.RLock()
+	defer t.muTmpl.RUnlock()
 	for k, v := range t.tmpl {
 		if k == t.name {
 			nt.tmpl[t.name] = nt
@@ -129,6 +129,8 @@ func (t *Template) copy(c *common) *Template {
 // definition is replaced; otherwise a new template is created, defined, and returned.
 func (t *Template) AddParseTree(name string, tree *parse.Tree) (*Template, error) {
 	t.init()
+	t.muTmpl.Lock()
+	defer t.muTmpl.Unlock()
 	nt := t
 	if name != t.name {
 		nt = t.New(name)
@@ -146,6 +148,8 @@ func (t *Template) Templates() []*Template {
 		return nil
 	}
 	// Return a slice so we don't expose the map.
+	t.muTmpl.RLock()
+	defer t.muTmpl.RUnlock()
 	m := make([]*Template, 0, len(t.tmpl))
 	for _, v := range t.tmpl {
 		m = append(m, v)
@@ -154,7 +158,7 @@ func (t *Template) Templates() []*Template {
 }
 
 // Delims sets the action delimiters to the specified strings, to be used in
-// subsequent calls to Parse, ParseFiles, or ParseGlob. Nested template
+// subsequent calls to [Template.Parse], [Template.ParseFiles], or [Template.ParseGlob]. Nested template
 // definitions will inherit the settings. An empty delimiter stands for the
 // corresponding default: {{ or }}.
 // The return value is the template, so calls can be chained.
@@ -186,6 +190,8 @@ func (t *Template) Lookup(name string) *Template {
 	if t.common == nil {
 		return nil
 	}
+	t.muTmpl.RLock()
+	defer t.muTmpl.RUnlock()
 	return t.tmpl[name]
 }
 
@@ -202,7 +208,7 @@ func (t *Template) Lookup(name string) *Template {
 func (t *Template) Parse(text string) (*Template, error) {
 	t.init()
 	t.muFuncs.RLock()
-	trees, err := parse.Parse(t.name, text, t.leftDelim, t.rightDelim, t.parseFuncs, builtins)
+	trees, err := parse.Parse(t.name, text, t.leftDelim, t.rightDelim, t.parseFuncs, builtins())
 	t.muFuncs.RUnlock()
 	if err != nil {
 		return nil, err

@@ -2,13 +2,10 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// Copyright 2020 Philip Schlump. All rights reserved.
-// Same license as the Go Authors in the LICENSE file.
-
 /*
 Package template implements data-driven templates for generating textual output.
 
-To generate HTML output, see package html/template, which has the same interface
+To generate HTML output, see [html/template], which has the same interface
 as this package but automatically secures HTML output against certain attacks.
 
 Templates are executed by applying them to a data structure. Annotations in the
@@ -21,7 +18,6 @@ structure as execution proceeds.
 The input text for a template is UTF-8-encoded text in any format.
 "Actions"--data evaluations or control structures--are delimited by
 "{{" and "}}"; all text outside actions is copied to the output unchanged.
-Except for raw strings, actions may not span newlines, although comments can.
 
 Once parsed, a template may be executed safely in parallel, although if parallel
 executions share a Writer the output may be interleaved.
@@ -43,16 +39,17 @@ More intricate examples appear below.
 Text and spaces
 
 By default, all text between actions is copied verbatim when the template is
-executed. For example, the string " items are made of " in the example above appears
-on standard output when the program is run.
+executed. For example, the string " items are made of " in the example above
+appears on standard output when the program is run.
 
-However, to aid in formatting template source code, if an action's left delimiter
-(by default "{{") is followed immediately by a minus sign and ASCII space character
-("{{- "), all trailing white space is trimmed from the immediately preceding text.
-Similarly, if the right delimiter ("}}") is preceded by a space and minus sign
-(" -}}"), all leading white space is trimmed from the immediately following text.
-In these trim markers, the ASCII space must be present; "{{-3}}" parses as an
-action containing the number -3.
+However, to aid in formatting template source code, if an action's left
+delimiter (by default "{{") is followed immediately by a minus sign and white
+space, all trailing white space is trimmed from the immediately preceding text.
+Similarly, if the right delimiter ("}}") is preceded by white space and a minus
+sign, all leading white space is trimmed from the immediately following text.
+In these trim markers, the white space must be present:
+"{{- 3}}" is like "{{3}}" but trims the immediately preceding text, while
+"{{-3}}" parses as an action containing the number -3.
 
 For instance, when executing the template whose source is
 
@@ -114,6 +111,14 @@ data, defined in detail in the corresponding sections that follow.
 		T0 is executed; otherwise, dot is set to the successive elements
 		of the array, slice, or map and T1 is executed.
 
+	{{break}}
+		The innermost {{range pipeline}} loop is ended early, stopping the
+		current iteration and bypassing all remaining iterations.
+
+	{{continue}}
+		The current iteration of the innermost {{range pipeline}} loop is
+		stopped, and the loop starts the next iteration.
+
 	{{template "name"}}
 		The template with the specified name is executed with nil data.
 
@@ -138,6 +143,13 @@ data, defined in detail in the corresponding sections that follow.
 		If the value of the pipeline is empty, dot is unaffected and T0
 		is executed; otherwise, dot is set to the value of the pipeline
 		and T1 is executed.
+
+	{{with pipeline}} T1 {{else with pipeline}} T0 {{end}}
+		To simplify the appearance of with-else chains, the else action
+		of a with may include another with directly; the effect is exactly
+		the same as writing
+			{{with pipeline}} T1 {{else}}{{with pipeline}} T0 {{end}}{{end}}
+
 
 Arguments
 
@@ -309,9 +321,10 @@ Predefined global functions are named as follows.
 
 	and
 		Returns the boolean AND of its arguments by returning the
-		first empty argument or the last argument, that is,
-		"and x y" behaves as "if x then y else x". All the
-		arguments are evaluated.
+		first empty argument or the last argument. That is,
+		"and x y" behaves as "if x then y else x."
+		Evaluation proceeds through the arguments left to right
+		and returns when the result is determined.
 	call
 		Returns the result of calling the first argument, which
 		must be a function, with the remaining arguments as parameters.
@@ -346,8 +359,9 @@ Predefined global functions are named as follows.
 	or
 		Returns the boolean OR of its arguments by returning the
 		first non-empty argument or the last argument, that is,
-		"or x y" behaves as "if x then x else y". All the
-		arguments are evaluated.
+		"or x y" behaves as "if x then x else y".
+		Evaluation proceeds through the arguments left to right
+		and returns when the result is determined.
 	print
 		An alias for fmt.Sprint
 	printf
@@ -417,10 +431,10 @@ The syntax of such definitions is to surround each template declaration with a
 The define action names the template being created by providing a string
 constant. Here is a simple example:
 
-	`{{define "T1"}}ONE{{end}}
+	{{define "T1"}}ONE{{end}}
 	{{define "T2"}}TWO{{end}}
 	{{define "T3"}}{{template "T1"}} {{template "T2"}}{{end}}
-	{{template "T3"}}`
+	{{template "T3"}}
 
 This defines two templates, T1 and T2, and a third T3 that invokes the other two
 when it is executed. Finally it invokes T3. If executed this template will
@@ -431,13 +445,13 @@ produce the text
 By construction, a template may reside in only one association. If it's
 necessary to have a template addressable from multiple associations, the
 template definition must be parsed multiple times to create distinct *Template
-values, or must be copied with the Clone or AddParseTree method.
+values, or must be copied with [Template.Clone] or [Template.AddParseTree].
 
 Parse may be called multiple times to assemble the various associated templates;
-see the ParseFiles and ParseGlob functions and methods for simple ways to parse
-related templates stored in files.
+see [ParseFiles], [ParseGlob], [Template.ParseFiles] and [Template.ParseGlob]
+for simple ways to parse related templates stored in files.
 
-A template may be executed directly or through ExecuteTemplate, which executes
+A template may be executed directly or through [Template.ExecuteTemplate], which executes
 an associated template identified by name. To invoke our example above, we
 might write,
 

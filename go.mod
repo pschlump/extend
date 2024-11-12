@@ -1,3 +1,3 @@
 module github.com/pschlump/extend
 
-go 1.17
+go 1.23.0
